@@ -224,25 +224,31 @@
             // TODO: Add objects you want here
             let mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
-            let platform = NormalMesh.platform(gl,lit_program,1,1,1,5,scale);
+            let platform = NormalMesh.platform(gl,lit_program,11,11,1,5,scale);
+            // let testLight = new NodeLight(1, 0, 0, 0);
             scene.create_node(0.5,0.5,0.5,0,0,0,1,1,1,mesh);
             scene.create_node(2,2,2,0,0,0,1,1,1,box);
             scene.create_node(3,3,3,0,0,0,1,1,1,box);
             scene.create_node(-4,4,-4,0,0,0,1,1,1,platform);
-            scene.create_node(-3,4,-4,0,0,0,1,1,1,platform);
-            scene.create_node(-2,4,-4,0,0,0,1,1,1,platform);
-            scene.create_node(-1,4,-4,0,0,0,1,1,1,platform);
-            scene.create_node(0,4,-4,0,0,0,1,1,1,platform);
+
+            // scene.create_node(5, 5, 5, 0, 0, 0, 1, 1, 1, testLight);
+
+
             scene.generate_render_batch(jobsToRender,lightsToRender);
             console.log(jobsToRender);
 
+            scene.set_sun_direction(5, 5, 0);
+            scene.set_sun_color(1, 0, 0);
+            scene.bind_sun(gl, lit_program);
+
+            // make light a child if it will move with the node it's a child of
 
 
             // this.data (last param of node) is realted to a matrix (matrix has data) what matrix are we
             //  giving to nodes? A rotation, translation, scaled matrix?
             // always render your lights then your objects
-            let modelTest = Mat4.translation( 0, 0, 0 );
-            let node = new Node(0, 0, 0, 0, 0, 0, 1, 1, 1, modelTest.data);
+            // let modelTest = Mat4.translation( 0, 0, 0 );
+            // let node = new Node(0, 0, 0, 0, 0, 0, 1, 1, 1, modelTest.data);
 
 
             let projection = Mat4.perspective_fovx( 0.125, 4 / 3, 0.125, 1024 );
@@ -255,10 +261,13 @@
                 
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
+                for(let i = 0; i < lightsToRender.length; i++) {
 
-                // bind lights
-                //sun.bind( gl, current_program, modelview );
-                //light1.bind( gl, current_program, modelview );
+                    let light = new Light(lightsToRender[i].x, lightsToRender[i].y, lightsToRender[i].z,
+                        lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, 1);
+                    light.bind(gl, current_program);
+
+                }
 
                 //mesh.render( gl );
                 // Iterate throgh each jobsToRender and render
@@ -266,22 +275,23 @@
                     // we're using world-space lighting, so it's okay to combine projection
                     // and model-view like this.
                     let model = jobsToRender[i].matrix;
-                    // model = model.mul( projection );
                     let view = scene.get_camera_view();
-                    // model = model.mul( cam.get_view_matrix() );
                     let modelview = view.mul( model );
+
                     set_uniform_matrix4( gl, current_program, 'projection', projection.data );
                     set_uniform_matrix4( gl, current_program, 'modelview', modelview.data );
                     set_uniform_matrix4( gl, current_program, 'model', model.data );
                     set_uniform_matrix4( gl, current_program, 'view', view.data );
 
                     // transform viewer coordinates
-                    // let viewer_loc = cam.get_transformed_coordinates();
-                    set_uniform_vec3( gl, current_program, 'viewer_loc', cam.x, cam.y, cam.z );
+                    let cameraMatrix = scene.get_camera_view();
+                    set_uniform_vec3( gl, current_program, 'viewer_loc', scene.camera_node.x,
+                        scene.camera_node.y, scene.camera_node.z );
 
                     jobsToRender[i].mesh.render(gl);
                 }
             }
+
             // TODO: might have to make the "cam" be scene.camera_node
             const KEYMAP = {
                 'KeyW': function() { scene.camera_node.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },

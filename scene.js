@@ -160,22 +160,11 @@ class NodeLight {
         this.r = r;
         this.g = g;
         this.b = b;
+        // 0 and 1 (1 if directional) not a boolean
         this.isDirectional = isDirectional;
-        let sun = false
-    }
-
-    create_point_light(isDirectional, dirX, dirY, dirZ){
+        this.is_the_sun = isDirectional
 
     }
-
-    create_dir_light(isDirectional, dirX, dirY, dirZ) {
-
-    }
-
-    is_the_sun() {
-        return sun;
-    }
-
 
 }
 
@@ -201,7 +190,7 @@ class Scene {
         this.camera_node = this.root;
         this.sun_node = 
             this.root.create_child_node( 
-                0, 1, 0, 0, 0, 0, 1, 1, 1, new NodeLight( 1, 1, 1, true ) );
+                0, 1, 0, 0, 0, 0, 1, 1, 1, new NodeLight( 1, 1, 1, 1 ) );
     }
 
     set_sun_color( r, g, b ) {

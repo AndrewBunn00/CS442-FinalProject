@@ -27,7 +27,7 @@ class Light {
      * @param {WebGLRenderingContext} gl 
      * @param {WebGLProgram} program
      */
-    bind( gl, program, modelview ) {
+    bind( gl, program ) {
         if( this.light_no == 0 ) { // this is the sun
             set_uniform_vec3( gl, program, 'sun_dir', this.x, this.y, this.z );
             set_uniform_vec3( gl, program, 'sun_color', this.r, this.g, this.b );
