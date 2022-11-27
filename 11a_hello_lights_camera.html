@@ -249,9 +249,13 @@
                 sun.bind( gl, current_program, modelview );
                 light1.bind( gl, current_program, modelview );
 
-                mesh.render( gl );
+                //mesh.render( gl );
+                // Iterate throgh each jobsToRender and render
+                for(let i = 0; i < jobsToRender.length; i++) {
+                    jobsToRender[i].mesh.render(gl);
+                }
             }
-
+            // TODO: might have to make the cam be scene.camera_node
             const KEYMAP = {
                 'KeyW': function() { cam.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
                 'KeyS': function() { cam.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
