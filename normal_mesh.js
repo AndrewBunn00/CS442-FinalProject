@@ -303,4 +303,40 @@ class NormalMesh {
 
         return new NormalMesh( gl, program, verts, indis, material, false );
     }
+
+
+
+
+    /**
+     * Asynchronously load the obj file as a mesh.
+     * @param {WebGLRenderingContext} gl
+     * @param {string} file_name
+     * @param {WebGLProgram} program
+     * @param {function} f the function to call and give mesh to when finished.
+     */
+    static from_obj_file( gl, file_name, program, f ) {
+        let request = new XMLHttpRequest();
+
+        // the function that will be called when the file is being loaded
+        request.onreadystatechange = function() {
+            // console.log( request.readyState );
+
+            if( request.readyState !== 4 ) { return; }
+            if( request.status !== 200 ) {
+                throw new Error( 'HTTP error when opening .obj file: ', request.statusText );
+            }
+
+            // now we know the file exists and is ready
+            // load the file
+            let loaded_mesh = Mesh.from_obj_text( gl, program, request.responseText );
+
+            console.log( 'loaded ', file_name );
+            console.log(loaded_mesh);
+            f( loaded_mesh );
+        };
+
+        request.open( 'GET', file_name ); // initialize request.
+        request.send();                   // execute request
+    }
+
 }

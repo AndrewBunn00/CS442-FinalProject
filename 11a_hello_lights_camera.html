@@ -224,8 +224,15 @@
             // TODO: Add objects you want here
             let mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
+            let platform = NormalMesh.platform(gl,lit_program,1,1,1,5,scale);
             scene.create_node(0.5,0.5,0.5,0,0,0,1,1,1,mesh);
-            scene.create_node(0.5,0.5,0.5,0,0,0,1,1,1,box);
+            scene.create_node(2,2,2,0,0,0,1,1,1,box);
+            scene.create_node(3,3,3,0,0,0,1,1,1,box);
+            scene.create_node(-4,4,-4,0,0,0,1,1,1,platform);
+            scene.create_node(-3,4,-4,0,0,0,1,1,1,platform);
+            scene.create_node(-2,4,-4,0,0,0,1,1,1,platform);
+            scene.create_node(-1,4,-4,0,0,0,1,1,1,platform);
+            scene.create_node(0,4,-4,0,0,0,1,1,1,platform);
             scene.generate_render_batch(jobsToRender,lightsToRender);
             console.log(jobsToRender);
 
@@ -248,47 +255,47 @@
                 
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-                // we're using world-space lighting, so it's okay to combine projection 
-                // and model-view like this.
-                let model = Mat4.translation( 0, 0, 0 );
-                // model = model.mul( projection );
-                let view = cam.get_view_matrix();
-                // model = model.mul( cam.get_view_matrix() );
-                let modelview = view.mul( model );
-                
-                set_uniform_matrix4( gl, current_program, 'projection', projection.data );
-                set_uniform_matrix4( gl, current_program, 'modelview', modelview.data );
-                set_uniform_matrix4( gl, current_program, 'model', model.data );
-                set_uniform_matrix4( gl, current_program, 'view', view.data );
-
-                // transform viewer coordinates
-                // let viewer_loc = cam.get_transformed_coordinates();
-                set_uniform_vec3( gl, current_program, 'viewer_loc', cam.x, cam.y, cam.z );
 
                 // bind lights
-                sun.bind( gl, current_program, modelview );
-                light1.bind( gl, current_program, modelview );
+                //sun.bind( gl, current_program, modelview );
+                //light1.bind( gl, current_program, modelview );
 
                 //mesh.render( gl );
                 // Iterate throgh each jobsToRender and render
                 for(let i = 0; i < jobsToRender.length; i++) {
+                    // we're using world-space lighting, so it's okay to combine projection
+                    // and model-view like this.
+                    let model = jobsToRender[i].matrix;
+                    // model = model.mul( projection );
+                    let view = scene.get_camera_view();
+                    // model = model.mul( cam.get_view_matrix() );
+                    let modelview = view.mul( model );
+                    set_uniform_matrix4( gl, current_program, 'projection', projection.data );
+                    set_uniform_matrix4( gl, current_program, 'modelview', modelview.data );
+                    set_uniform_matrix4( gl, current_program, 'model', model.data );
+                    set_uniform_matrix4( gl, current_program, 'view', view.data );
+
+                    // transform viewer coordinates
+                    // let viewer_loc = cam.get_transformed_coordinates();
+                    set_uniform_vec3( gl, current_program, 'viewer_loc', cam.x, cam.y, cam.z );
+
                     jobsToRender[i].mesh.render(gl);
                 }
             }
-            // TODO: might have to make the cam be scene.camera_node
+            // TODO: might have to make the "cam" be scene.camera_node
             const KEYMAP = {
-                'KeyW': function() { cam.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
-                'KeyS': function() { cam.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
-                'KeyA': function() { cam.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'KeyD': function() { cam.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'Space': function() { cam.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyC': function() { cam.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyQ': function() { cam.add_roll( -ROTATION_SPEED_PER_FRAME ); },
-                'KeyE': function() { cam.add_roll( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowLeft': function() { cam.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowRight': function() { cam.add_yaw( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowUp': function() { cam.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowDown': function() { cam.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+                'KeyW': function() { scene.camera_node.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
+                'KeyS': function() { scene.camera_node.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
+                'KeyA': function() { scene.camera_node.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'KeyD': function() { scene.camera_node.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'Space': function() { scene.camera_node.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyC': function() { scene.camera_node.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyQ': function() { scene.camera_node.add_roll( -ROTATION_SPEED_PER_FRAME ); },
+                'KeyE': function() { scene.camera_node.add_roll( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowLeft': function() { scene.camera_node.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowRight': function() { scene.camera_node.add_yaw( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowUp': function() { scene.camera_node.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowDown': function() { scene.camera_node.add_pitch( ROTATION_SPEED_PER_FRAME ); },
             };
 
             function update() {
