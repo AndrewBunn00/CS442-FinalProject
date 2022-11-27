@@ -153,6 +153,33 @@ class Node {
     }
 }
 
+
+class NodeLight {
+    // True if its dir and false if its point light
+    constructor(r, g, b, isDirectional) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.isDirectional = isDirectional;
+        let sun = false
+    }
+
+    create_point_light(isDirectional, dirX, dirY, dirZ){
+
+    }
+
+    create_dir_light(isDirectional, dirX, dirY, dirZ) {
+
+    }
+
+    is_the_sun() {
+        return sun;
+    }
+
+
+}
+
+
 class RenderLight {
     constructor( loc, color ) {
         this.loc = loc;
