@@ -33,7 +33,35 @@
         <!-- <script src = "programs.js"></script> -->
         <script src = "light.js"></script>
         <script src = "scene.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
+
         <script>
+            const loader = new THREE.ObjectLoader();
+
+            loader.load(
+                // resource URL
+                'models/cat.obj',
+                // called when resource is loaded
+                function ( object ) {
+
+                    //scene.add( object );
+                    scene.create_node(0.5,0.5,0.5,0,0,0,1,1,1,mesh);
+
+                },
+                // called when loading is in progresses
+                function ( xhr ) {
+
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+                },
+                // called when loading has errors
+                function ( error ) {
+
+                    console.log( 'An error happened' );
+
+                }
+            );
+
             let canvas = document.getElementById( 'the-canvas' );
             /** @type {WebGLRenderingContext} */
             let gl = canvas.getContext( 'webgl2' );
@@ -244,7 +272,7 @@
             // make light a child if it will move with the node it's a child of
 
 
-            // this.data (last param of node) is realted to a matrix (matrix has data) what matrix are we
+            // this.data (last param of node) is related to a matrix (matrix has data) what matrix are we
             //  giving to nodes? A rotation, translation, scaled matrix?
             // always render your lights then your objects
             // let modelTest = Mat4.translation( 0, 0, 0 );
