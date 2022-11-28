@@ -1,0 +1,7 @@
+{
+  "name": "CS442-FinalProject",
+  "version": "1.0.0",
+  "dependencies": {
+    "three": "^0.146.0"
+  }
+}
