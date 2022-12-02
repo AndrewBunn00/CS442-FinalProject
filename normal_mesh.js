@@ -1,10 +1,15 @@
 
 const VERTEX_STRIDE = 48;
 let m = null;
+let mList = [];
 
 
 function saveMesh(meshToSave) {
     m = meshToSave;
+}
+
+function saveMeshToList(meshToSave) {
+    mList.push(meshToSave);
 }
 
 class NormalMesh {
