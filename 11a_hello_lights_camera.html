@@ -33,14 +33,8 @@
         <!-- <script src = "programs.js"></script> -->
         <script src = "light.js"></script>
         <script src = "scene.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 
         <script>
-
-
-
-
-            // import {OBJ} from "webgl-obj-loader";
 
             let canvas = document.getElementById( 'the-canvas' );
             /** @type {WebGLRenderingContext} */
@@ -216,8 +210,7 @@
             // let grass =
             //     new LitMaterial( gl,
             //     'tex/grass_lawn_seamless.png', gl.LINEAR, 0.2, 0.8, 0.05, 1.0 );
-            let scale = 
-                new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
+            let scale = new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
 
             let sun_dir = ( new Vec4( 1.0, 0.0, 0.0, 0.0 ) ).norm();
             let sun = new Light( sun_dir.x, sun_dir.y, sun_dir.z, 1.0, 0.95, 0.85, 0 );
@@ -227,179 +220,6 @@
             let jobsToRender = []
             let lightsToRender = []
             let scene = new Scene();
-
-            const loader = new THREE.ObjectLoader();
-
-
-            // TODO: Start here:
-            function parseOBJ(text) {
-                // because indices are base 1 let's just fill in the 0th data
-                const objPositions = [[0, 0, 0]];
-                const objTexcoords = [[0, 0]];
-                const objNormals = [[0, 0, 0]];
-                const objColors = [[0, 0, 0]];
-
-                // same order as `f` indices
-                const objVertexData = [
-                    objPositions,
-                    objTexcoords,
-                    objNormals,
-                    objColors,
-                ];
-
-                // same order as `f` indices
-                let webglVertexData = [
-                    [],   // positions
-                    [],   // texcoords
-                    [],   // normals
-                    [],   // colors
-                ];
-
-                const materialLibs = [];
-                const geometries = [];
-                let geometry;
-                let groups = ['default'];
-                let material = 'default';
-                let object = 'default';
-
-                const noop = () => {};
-
-                function newGeometry() {
-                    // If there is an existing geometry and it's
-                    // not empty then start a new one.
-                    if (geometry && geometry.data.position.length) {
-                        geometry = undefined;
-                    }
-                }
-
-                function setGeometry() {
-                    if (!geometry) {
-                        const position = [];
-                        const texcoord = [];
-                        const normal = [];
-                        const color = [];
-                        webglVertexData = [
-                            position,
-                            texcoord,
-                            normal,
-                            color,
-                        ];
-                        geometry = {
-                            object,
-                            groups,
-                            material,
-                            data: {
-                                position,
-                                texcoord,
-                                normal,
-                                color,
-                            },
-                        };
-                        geometries.push(geometry);
-                    }
-                }
-
-                function addVertex(vert) {
-                    const ptn = vert.split('/');
-                    ptn.forEach((objIndexStr, i) => {
-                        if (!objIndexStr) {
-                            return;
-                        }
-                        const objIndex = parseInt(objIndexStr);
-                        const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
-                        webglVertexData[i].push(...objVertexData[i][index]);
-                        // if this is the position index (index 0) and we parsed
-                        // vertex colors then copy the vertex colors to the webgl vertex color data
-                        if (i === 0 && objColors.length > 1) {
-                            geometry.data.color.push(...objColors[index]);
-                        }
-                    });
-                }
-
-                const keywords = {
-                    v(parts) {
-                        // if there are more than 3 values here they are vertex colors
-                        if (parts.length > 3) {
-                            objPositions.push(parts.slice(0, 3).map(parseFloat));
-                            objColors.push(parts.slice(3).map(parseFloat));
-                        } else {
-                            objPositions.push(parts.map(parseFloat));
-                        }
-                    },
-                    vn(parts) {
-                        objNormals.push(parts.map(parseFloat));
-                    },
-                    vt(parts) {
-                        // should check for missing v and extra w?
-                        objTexcoords.push(parts.map(parseFloat));
-                    },
-                    f(parts) {
-                        setGeometry();
-                        const numTriangles = parts.length - 2;
-                        for (let tri = 0; tri < numTriangles; ++tri) {
-                            addVertex(parts[0]);
-                            addVertex(parts[tri + 1]);
-                            addVertex(parts[tri + 2]);
-                        }
-                    },
-                    s: noop,    // smoothing group
-                    mtllib(parts, unparsedArgs) {
-                        // the spec says there can be multiple filenames here
-                        // but many exist with spaces in a single filename
-                        materialLibs.push(unparsedArgs);
-                    },
-                    usemtl(parts, unparsedArgs) {
-                        material = unparsedArgs;
-                        newGeometry();
-                    },
-                    g(parts) {
-                        groups = parts;
-                        newGeometry();
-                    },
-                    o(parts, unparsedArgs) {
-                        object = unparsedArgs;
-                        newGeometry();
-                    },
-                };
-
-                const keywordRE = /(\w*)(?: )*(.*)/;
-                const lines = text.split('\n');
-                for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
-                    const line = lines[lineNo].trim();
-                    if (line === '' || line.startsWith('#')) {
-                        continue;
-                    }
-                    const m = keywordRE.exec(line);
-                    if (!m) {
-                        continue;
-                    }
-                    const [, keyword, unparsedArgs] = m;
-                    const parts = line.split(/\s+/).slice(1);
-                    const handler = keywords[keyword];
-                    if (!handler) {
-                        console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
-                        continue;
-                    }
-                    handler(parts, unparsedArgs);
-                }
-
-                // remove any arrays that have no entries.
-                for (const geometry of geometries) {
-                    geometry.data = Object.fromEntries(
-                        Object.entries(geometry.data).filter(([, array]) => array.length > 0));
-                }
-
-                return {
-                    geometries,
-                    materialLibs,
-                };
-            }
-
-
-
-            parseOBJ("models/cat.obj")
-
-
 
             let map = [
                 [0, 0, 0, 0],
@@ -420,17 +240,6 @@
                 [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
             ]
 
-            // var fs = require('fs');
-            // var OBJ = require('webgl-obj-loader');
-            //
-            // var meshPath = './development/models/sphere.obj';
-            // var opt = { encoding: 'utf8' };
-            //
-            // fs.readFile(meshPath, opt, function (err, data){
-            //     if (err) return console.error(err);
-            //     var mesh = new OBJ.Mesh(data);
-            // });
-
             // TODO: Add objects you want here
             let m = null;
             let mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
@@ -443,24 +252,24 @@
 
             // let testLight = new NodeLight(1, 0, 0, 0);
 
-            NormalMesh.from_obj_file(gl, "models/teapot.obj", lit_program, saveMesh, scale);
+            NormalMesh.from_obj_file(gl, "models/house.obj", lit_program, saveMesh, scale);
 
             scene.create_node(0.5,0.5,15,0,0,0,1,1,1,mesh);
             scene.create_node(2,2,2,0,0,0,1,1,1,box);
             scene.create_node(3,3,3,0,0,0,1,1,1,box);
             scene.create_node(-4,4,-4,0,0,0,1,1,1,platform);
             // scene.create_node(0, 0, 10,0,0,0,1,1,1,largerTerrain);
-            scene.create_node(0.5,1,10,0,0,0,1,1,1,m);
-
+            console.log("MESH M")
+            console.log(m);
+            // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
 
             // scene.create_node(5, 5, 5, 0, 0, 0, 1, 1, 1, testLight);
 
 
-            scene.generate_render_batch(jobsToRender,lightsToRender);
-            console.log(jobsToRender);
+            // console.log(jobsToRender);
 
             scene.set_sun_direction(5, 5, 0);
-            scene.set_sun_color(1, 0, 0);
+            scene.set_sun_color(1, 0, 1);
             scene.bind_sun(gl, lit_program);
 
             // make light a child if it will move with the node it's a child of
@@ -468,42 +277,54 @@
             let projection = Mat4.perspective_fovx( 0.125, 4 / 3, 0.125, 1024 );
             let current_program = lit_program;
 
+            let loaded = false;
+
             function render( now ) {
                 last_update = now;
 
                 requestAnimationFrame( render );
-                
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-                for(let i = 0; i < lightsToRender.length; i++) {
+                if(m !== null) {
 
-                    let light = new Light(lightsToRender[i].x, lightsToRender[i].y, lightsToRender[i].z,
-                        lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, 1);
-                    light.bind(gl, current_program);
+                    if(!loaded) {
+                        scene.create_node(0.5, 1, 10, 0, 0, 0, 0.1, 0.1, 0.1, m);
+                        scene.generate_render_batch(jobsToRender,lightsToRender);
+                        loaded = true;
+                    }
 
+                    for(let i = 0; i < lightsToRender.length; i++) {
+
+                        let light = new Light(lightsToRender[i].x, lightsToRender[i].y, lightsToRender[i].z,
+                            lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, 1);
+                        light.bind(gl, current_program);
+
+                    }
+
+                    // Iterate through each jobsToRender and render
+                    for(let i = 0; i < jobsToRender.length; i++) {
+                        // we're using world-space lighting, so it's okay to combine projection
+                        // and model-view like this.
+                        let model = jobsToRender[i].matrix;
+                        let view = scene.get_camera_view();
+                        let modelview = view.mul( model );
+
+                        set_uniform_matrix4( gl, current_program, 'projection', projection.data );
+                        set_uniform_matrix4( gl, current_program, 'modelview', modelview.data );
+                        set_uniform_matrix4( gl, current_program, 'model', model.data );
+                        set_uniform_matrix4( gl, current_program, 'view', view.data );
+
+                        // transform viewer coordinates
+                        let cameraMatrix = scene.get_camera_view();
+                        set_uniform_vec3( gl, current_program, 'viewer_loc', scene.camera_node.x,
+                            scene.camera_node.y, scene.camera_node.z );
+
+                        jobsToRender[i].mesh.render(gl);
+                    }
                 }
 
-                //mesh.render( gl );
-                // Iterate throgh each jobsToRender and render
-                for(let i = 0; i < jobsToRender.length; i++) {
-                    // we're using world-space lighting, so it's okay to combine projection
-                    // and model-view like this.
-                    let model = jobsToRender[i].matrix;
-                    let view = scene.get_camera_view();
-                    let modelview = view.mul( model );
+                
 
-                    set_uniform_matrix4( gl, current_program, 'projection', projection.data );
-                    set_uniform_matrix4( gl, current_program, 'modelview', modelview.data );
-                    set_uniform_matrix4( gl, current_program, 'model', model.data );
-                    set_uniform_matrix4( gl, current_program, 'view', view.data );
-
-                    // transform viewer coordinates
-                    let cameraMatrix = scene.get_camera_view();
-                    set_uniform_vec3( gl, current_program, 'viewer_loc', scene.camera_node.x,
-                        scene.camera_node.y, scene.camera_node.z );
-
-                    jobsToRender[i].mesh.render(gl);
-                }
             }
 
             // TODO: might have to make the "cam" be scene.camera_node

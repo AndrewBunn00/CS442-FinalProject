@@ -14,6 +14,9 @@ class NormalMesh {
     constructor( gl, program, vertices, indices, material, use_color ) {
         this.verts = create_and_load_vertex_buffer( gl, vertices, gl.STATIC_DRAW );
         this.indis = create_and_load_elements_buffer( gl, indices, gl.STATIC_DRAW );
+        // console.log("VERTS" + this.verts);
+        // console.log("INDIS" + this.indis);
+
 
         this.n_verts = vertices.length / VERTEX_STRIDE * 4;
         this.n_indis = indices.length;
@@ -327,13 +330,11 @@ class NormalMesh {
                 throw new Error( 'HTTP error when opening .obj file: ', request.statusText );
             }
 
-            // now we know the file exists and is ready
-            // load the file
-            let loaded_mesh = NormalMesh.from_obj_text( gl, program, request.responseText, material );
-            let new_mesh =
+            // now we know the file exists and is ready load the file
+            let loaded_mesh = NormalMesh.from_obj_text_complex( gl, program, request.responseText, material );
 
-            console.log( 'loaded ', file_name );
-            console.log(loaded_mesh);
+            // console.log( 'loaded ', file_name );
+            // console.log(loaded_mesh);
             f( loaded_mesh );
         };
 
@@ -346,14 +347,13 @@ class NormalMesh {
      * @param {WebGLRenderingContext} gl
      * @param {WebGLProgram} program
      * @param {string} text
+     * @param material
      */
     static from_obj_text( gl, program, text, material ) {
         // create verts and indis from the text
 
-        let verts = []
-        let indis = []
-
-        // YOUR CODE GOES HERE
+        let verts = [];
+        let indis = [];
 
         // split on endlines no matter OS
         let lines = text.split( /\r?\n/ );
@@ -366,6 +366,7 @@ class NormalMesh {
             let parts_of_line = element.split( /(\s+)/ );
 
             parts_of_line.forEach((element2, index) => {
+
                 if(element2.startsWith('v')) {
                     verts.push(parseFloat(parts_of_line[index+2]));
                     verts.push(parseFloat(parts_of_line[index+4]));
@@ -374,6 +375,15 @@ class NormalMesh {
                     verts.push(0.0);
                     verts.push(0.0);
                     verts.push(0.0);
+                    verts.push(1.0);
+
+                    // uv
+                    verts.push(1.0);
+                    verts.push(1.0);
+
+                    // surface norms
+                    verts.push(1.0);
+                    verts.push(1.0);
                     verts.push(1.0);
                 }
                 else if(element2.startsWith('f')) {
@@ -390,47 +400,71 @@ class NormalMesh {
     }
 
 
-
-
-    static from_obj_text2( gl, program, text, material ) {
-        let lines = text.split( /\r?\n/ );
+    static from_obj_text_complex( gl, program, text, material ) {
+        // create verts and indis from the text
 
         let verts = [];
+        let colors = [];
+        let vns = [];
+        let uvs = [];
         let index = [];
 
-        for( let line of lines ) {
-            let trimmed = line.trim();
-            let parts = trimmed.split( /(\s+)/ );
+        let lines = text.split( /\r?\n/ );
 
-            if(
-                parts === null || parts.length < 2 ||
-                parts[0] === '#' || parts[0] === '' )
-            {
-                continue;
+        for(let line of lines) {
+            let newLine = line.trim();
+            let segs = newLine.split( /(\s+)/ );
+
+            if( segs === null || segs.length < 2 ||
+                segs[0] === '#' || segs[0] === '' ) {
+
             }
-            else if( parts[0] === 'v' ) {
-                verts.push( parseFloat( parts[2] ) );
-                verts.push( parseFloat( parts[4] ) );
-                verts.push( parseFloat( parts[6] ) );
-                // color data
-                verts.push( 1, 1, 1, 1 );
-            } else if ( parts[0] === 'f' ) {
-                parts.forEach( part => {
-                    if (part !== 'f' && part !== ' ') {
-                        let indices = part.split('/');
-                        // console.log(indices);
+            else if(segs[0] === 'v') {
+                verts.push( parseFloat( segs[2] ) );
+                verts.push( parseFloat( segs[4] ) );
+                verts.push( parseFloat( segs[6] ) );
 
-                        index.push(parseFloat(part[0]));//, parseFloat(indices[1]), parseFloat(indices[2])
+                colors.push(0.0, 0.0, 0.0, 1.0);
+            }
+            else if ( segs[0] === 'f' ) {
+                segs.forEach( seg => {
+                    if (seg !== 'f' && seg !== ' ') {
+                        let indices = seg.split('/');
+
+                        index.push(parseInt(indices[0]) - 1);
                     }
                 });
+            } // uv coords
+            else if (segs[0] === 'vt') {
+                uvs.push(parseFloat(segs[2]), parseFloat(segs[4]));
+            } // vertex normals
+            else if (segs[0] === 'vn') {
+                vns.push(parseFloat(segs[2]), parseFloat(segs[4]), parseFloat(segs[6]));
             }
-        }
-        //console.log( verts.slice(540, 600) )
-        // console.log( indis.slice(540, 600) )
-        // console.log(index.length)
-        return new NormalMesh( gl, program, verts, index, material, false );
-    }
 
+        }
+
+        let colorIndex = 0;
+        let uvIndex = 0;
+        let vnIndex = 0;
+
+        let trueVerts = [];
+
+        for(let i = 0; i < verts.length - 2; i += 3 ) {
+            // coordinates, colors, uv coords, and vertex normals
+            trueVerts.push(verts[i], verts[i+1], verts[i+2]);
+            trueVerts.push(colors[colorIndex], colors[colorIndex+1], colors[colorIndex+2], colors[colorIndex+3]);
+            trueVerts.push(uvs[uvIndex], uvs[uvIndex+1]);
+            trueVerts.push(vns[vnIndex], vns[vnIndex+1], vns[vnIndex+2]);
+
+            // increment each index according to their stride
+            colorIndex += 4;
+            uvIndex += 2;
+            vnIndex += 3;
+        }
+
+        return new NormalMesh( gl, program, trueVerts, index, material, false );
+    }
 
 }
 
