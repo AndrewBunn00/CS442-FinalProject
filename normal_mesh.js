@@ -1,6 +1,11 @@
 
 const VERTEX_STRIDE = 48;
+let m = null;
 
+
+function saveMesh(meshToSave) {
+    m = meshToSave;
+}
 
 class NormalMesh {
     /** 
@@ -469,6 +474,3 @@ class NormalMesh {
 }
 
 
-function saveMesh(meshToSave) {
-    m = meshToSave;
-}
