@@ -211,6 +211,8 @@
             //     new LitMaterial( gl,
             //     'tex/grass_lawn_seamless.png', gl.LINEAR, 0.2, 0.8, 0.05, 1.0 );
             let scale = new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
+            let skyMat = new LitMaterial(gl, 'tex/seaSky.jpg', gl.LINEAR, 1, 0, 0, 1);
+            let grassMat = new LitMaterial(gl, 'tex/grass.jpg', gl.LINEAR, 1, 0, 0, 1);
 
             let sun_dir = ( new Vec4( 1.0, 0.0, 0.0, 0.0 ) ).norm();
             let sun = new Light( sun_dir.x, sun_dir.y, sun_dir.z, 1.0, 0.95, 0.85, 0 );
@@ -242,21 +244,21 @@
 
             // TODO: Add objects you want here
             let mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
+            let sky = NormalMesh.uv_sphere( gl, lit_program, 75, 16, skyMat );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
-            let platform = NormalMesh.platform(gl,lit_program,11,11,1,5,scale);
+            let platform = NormalMesh.platform(gl,lit_program,250,250,1,15,grassMat);
             let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
             let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggerMap, 0, 2, scale);
 
-            // NormalMesh.from_obj_file(gl, "models/cat.obj", lit_program, saveMesh, scale);
-
             // let testLight = new NodeLight(1, 0, 0, 0);
 
-            NormalMesh.from_obj_file(gl, "models/house.obj", lit_program, saveMesh, scale);
+            NormalMesh.from_obj_file(gl, "models/cabin.obj", lit_program, saveMesh, scale);
 
             scene.create_node(0.5,0.5,15,0,0,0,1,1,1,mesh);
+            scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
             scene.create_node(2,2,2,0,0,0,1,1,1,box);
             scene.create_node(3,3,3,0,0,0,1,1,1,box);
-            scene.create_node(-4,4,-4,0,0,0,1,1,1,platform);
+            scene.create_node(-4,-1,-4,0,0,0,1,1,1,platform);
             // scene.create_node(0, 0, 10,0,0,0,1,1,1,largerTerrain);
             console.log("MESH M")
             console.log(m);
@@ -287,7 +289,7 @@
                 if(m !== null) {
 
                     if(!loaded) {
-                        scene.create_node(0.5, 1, 10, 0, 0, 0, 0.1, 0.1, 0.1, m);
+                        scene.create_node(0.5, -2.75, 30, 2.3, 0, 0, 1, 1, 1, m);
                         scene.generate_render_batch(jobsToRender,lightsToRender);
                         loaded = true;
                     }
