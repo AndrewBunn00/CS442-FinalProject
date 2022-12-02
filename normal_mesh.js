@@ -313,8 +313,9 @@ class NormalMesh {
      * @param {string} file_name
      * @param {WebGLProgram} program
      * @param {function} f the function to call and give mesh to when finished.
+     * @param material
      */
-    static from_obj_file( gl, file_name, program, f ) {
+    static from_obj_file( gl, file_name, program, f, material ) {
         let request = new XMLHttpRequest();
 
         // the function that will be called when the file is being loaded
@@ -328,7 +329,8 @@ class NormalMesh {
 
             // now we know the file exists and is ready
             // load the file
-            let loaded_mesh = Mesh.from_obj_text( gl, program, request.responseText );
+            let loaded_mesh = NormalMesh.from_obj_text( gl, program, request.responseText, material );
+            let new_mesh =
 
             console.log( 'loaded ', file_name );
             console.log(loaded_mesh);
@@ -339,4 +341,100 @@ class NormalMesh {
         request.send();                   // execute request
     }
 
+    /**
+     * Parse the given text as the body of an obj file.
+     * @param {WebGLRenderingContext} gl
+     * @param {WebGLProgram} program
+     * @param {string} text
+     */
+    static from_obj_text( gl, program, text, material ) {
+        // create verts and indis from the text
+
+        let verts = []
+        let indis = []
+
+        // YOUR CODE GOES HERE
+
+        // split on endlines no matter OS
+        let lines = text.split( /\r?\n/ );
+
+
+        lines.forEach(element => {
+            // may not need trim
+            element = element.trim();
+            // split the line on whitespace
+            let parts_of_line = element.split( /(\s+)/ );
+
+            parts_of_line.forEach((element2, index) => {
+                if(element2.startsWith('v')) {
+                    verts.push(parseFloat(parts_of_line[index+2]));
+                    verts.push(parseFloat(parts_of_line[index+4]));
+                    verts.push(parseFloat(parts_of_line[index+6]));
+                    // hard code to no colors for now
+                    verts.push(0.0);
+                    verts.push(0.0);
+                    verts.push(0.0);
+                    verts.push(1.0);
+                }
+                else if(element2.startsWith('f')) {
+                    indis.push(parseInt(parts_of_line[index+2]-1));
+                    indis.push(parseInt(parts_of_line[index+4]-1));
+                    indis.push(parseInt(parts_of_line[index+6]-1));
+                }
+
+            });
+
+        });
+
+        return new NormalMesh( gl, program, verts, indis, material, false );
+    }
+
+
+
+
+    static from_obj_text2( gl, program, text, material ) {
+        let lines = text.split( /\r?\n/ );
+
+        let verts = [];
+        let index = [];
+
+        for( let line of lines ) {
+            let trimmed = line.trim();
+            let parts = trimmed.split( /(\s+)/ );
+
+            if(
+                parts === null || parts.length < 2 ||
+                parts[0] === '#' || parts[0] === '' )
+            {
+                continue;
+            }
+            else if( parts[0] === 'v' ) {
+                verts.push( parseFloat( parts[2] ) );
+                verts.push( parseFloat( parts[4] ) );
+                verts.push( parseFloat( parts[6] ) );
+                // color data
+                verts.push( 1, 1, 1, 1 );
+            } else if ( parts[0] === 'f' ) {
+                parts.forEach( part => {
+                    if (part !== 'f' && part !== ' ') {
+                        let indices = part.split('/');
+                        // console.log(indices);
+
+                        index.push(parseFloat(part[0]));//, parseFloat(indices[1]), parseFloat(indices[2])
+                    }
+                });
+            }
+        }
+        //console.log( verts.slice(540, 600) )
+        // console.log( indis.slice(540, 600) )
+        // console.log(index.length)
+        return new NormalMesh( gl, program, verts, index, material, false );
+    }
+
+
+}
+
+
+function saveMesh(meshToSave) {
+    m = meshToSave;
 }
