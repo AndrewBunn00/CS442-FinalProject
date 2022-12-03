@@ -267,28 +267,31 @@
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
             let platform = NormalMesh.platform(gl,lit_program,250,250,1,15,grassMat);
             let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
-            let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, grassReflective);
+            let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
 
-            // let testLight = new NodeLight(1, 0, 0, 0);
+            let testLight = new NodeLight(1, 0, 0, 0);
 
-            let numOfSceneObjs = 4;
+            let numOfSceneObjs = 2;
 
             NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
             NormalMesh.from_obj_file(gl, "models/cabin.obj", lit_program, saveMeshToList, woodMat);
-            NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
-            NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
+            // NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
+            // NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
+            // NormalMesh.from_obj_file(gl, "models/garfield.obj", lit_program, saveMeshToList, grassReflective);
 
 
             scene.create_node(0.5,0.5,15,0,0,0,1,1,1,mesh);
             scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
-            scene.create_node(2,2,2,0,0,0,1,1,1,box);
-            scene.create_node(3,3,3,0,0,0,1,1,1,box);
+            scene.create_node(0.5,2,2,0,0,0,1,1,1,box);
+            scene.create_node(0.5,3,3,0,0,0,1,1,1,box);
             scene.create_node(-4,-1,-4,0,0,0,1,1,1,platform);
             // scene.create_node(0, 0, 10,0,0,0,1,1,1,largerTerrain);
-            console.log("MESH M")
-            console.log(m);
+
+            // console.log("MESH M")
+            // console.log(m);
+
             // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
-            // scene.create_node(5, 5, 5, 0, 0, 0, 1, 1, 1, testLight);
+            // scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
 
             scene.set_sun_direction(5, 5, 0);
             scene.set_sun_color(1, 0, 1);
@@ -301,8 +304,13 @@
 
             let loaded = false;
 
+
+            let camera = new Camera();
+
             function render( now ) {
                 last_update = now;
+                jobsToRender = [];
+                lightsToRender = [];
 
                 requestAnimationFrame( render );
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -310,19 +318,24 @@
                 console.log("Mlist Len: " + mList.length);
                 if((mList.length > numOfSceneObjs-1)) {
 
+                    // do movements then generate batch
+                    scene.generate_render_batch(jobsToRender,lightsToRender);
+
                     if(!loaded) {
                         scene.create_node(0.5, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[0]);
                         scene.create_node(30, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[1]);
+                        // scene.create_node(30, -2.75, -30, 2.3, 0, 0, 1, 1, 1, mList[2]);
+                        // scene.create_node(30, -2.75, 45, 2.3, 0, 0, 1, 1, 1, mList[3]);
+                        // scene.create_node(10, -2.75, 45, 2.3, 0, 0, 1, 1, 1, mList[4]);
 
                         // console.log(m);
-                        scene.generate_render_batch(jobsToRender,lightsToRender);
                         loaded = true;
                     }
 
                     for(let i = 0; i < lightsToRender.length; i++) {
 
                         let light = new Light(lightsToRender[i].x, lightsToRender[i].y, lightsToRender[i].z,
-                            lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, 1);
+                            lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, i+1);
                         light.bind(gl, current_program);
 
                     }
@@ -332,7 +345,7 @@
                         // we're using world-space lighting, so it's okay to combine projection
                         // and model-view like this.
                         let model = jobsToRender[i].matrix;
-                        let view = scene.get_camera_view();
+                        let view = camera.get_view_matrix();
                         let modelview = view.mul( model );
 
                         set_uniform_matrix4( gl, current_program, 'projection', projection.data );
@@ -342,34 +355,29 @@
 
                         // transform viewer coordinates
                         let cameraMatrix = scene.get_camera_view();
-                        set_uniform_vec3( gl, current_program, 'viewer_loc', scene.camera_node.x,
-                            scene.camera_node.y, scene.camera_node.z );
+                        set_uniform_vec3( gl, current_program, 'viewer_loc', camera.x,
+                            camera.y, camera.z );
 
                         jobsToRender[i].mesh.render(gl);
                     }
-
-
-
                 }
-
-                
 
             }
 
             // TODO: might have to make the "cam" be scene.camera_node
             const KEYMAP = {
-                'KeyW': function() { scene.camera_node.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
-                'KeyS': function() { scene.camera_node.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
-                'KeyA': function() { scene.camera_node.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'KeyD': function() { scene.camera_node.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'Space': function() { scene.camera_node.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyC': function() { scene.camera_node.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyQ': function() { scene.camera_node.add_roll( -ROTATION_SPEED_PER_FRAME ); },
-                'KeyE': function() { scene.camera_node.add_roll( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowLeft': function() { scene.camera_node.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowRight': function() { scene.camera_node.add_yaw( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowUp': function() { scene.camera_node.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowDown': function() { scene.camera_node.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+                'KeyW': function() { camera.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
+                'KeyS': function() { camera.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
+                'KeyA': function() { camera.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'KeyD': function() { camera.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'Space': function() { camera.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyC': function() { camera.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyQ': function() { camera.add_roll( -ROTATION_SPEED_PER_FRAME ); },
+                'KeyE': function() { camera.add_roll( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowLeft': function() { camera.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowRight': function() { camera.add_yaw( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowUp': function() { camera.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowDown': function() { camera.add_pitch( ROTATION_SPEED_PER_FRAME ); },
             };
 
             function update() {
