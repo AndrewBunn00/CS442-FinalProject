@@ -269,7 +269,7 @@
             let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
             let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
 
-            let testLight = new NodeLight(1, 0, 0, 0);
+            let testLight = new NodeLight(0, 1, 0, 0);
 
             let numOfSceneObjs = 2;
 
@@ -281,7 +281,7 @@
 
 
             scene.create_node(0.5,0.5,15,0,0,0,1,1,1,mesh);
-            scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
+            // scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
             scene.create_node(0.5,2,2,0,0,0,1,1,1,box);
             scene.create_node(0.5,3,3,0,0,0,1,1,1,box);
             scene.create_node(-4,-1,-4,0,0,0,1,1,1,platform);
@@ -291,7 +291,7 @@
             // console.log(m);
 
             // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
-            // scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
+            scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
 
             scene.set_sun_direction(5, 5, 0);
             scene.set_sun_color(1, 0, 1);
@@ -333,9 +333,9 @@
                     }
 
                     for(let i = 0; i < lightsToRender.length; i++) {
-
-                        let light = new Light(lightsToRender[i].x, lightsToRender[i].y, lightsToRender[i].z,
-                            lightsToRender[i].r, lightsToRender[i].g, lightsToRender[i].b, i+1);
+                        console.log(lightsToRender);
+                        let light = new Light(lightsToRender[i].loc.x, lightsToRender[i].loc.y, lightsToRender[i].loc.z,
+                            lightsToRender[i].color.r, lightsToRender[i].color.g, lightsToRender[i].color.b, i+1);
                         light.bind(gl, current_program);
 
                     }
