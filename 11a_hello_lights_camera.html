@@ -271,10 +271,12 @@
 
             // let testLight = new NodeLight(1, 0, 0, 0);
 
-            let numOfSceneObjs = 2;
+            let numOfSceneObjs = 4;
 
             NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
             NormalMesh.from_obj_file(gl, "models/cabin.obj", lit_program, saveMeshToList, woodMat);
+            NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
+            NormalMesh.from_obj_file(gl, "models/DeadTree.obj", lit_program, saveMeshToList, woodMat);
 
 
             scene.create_node(0.5,0.5,15,0,0,0,1,1,1,mesh);
@@ -310,7 +312,7 @@
 
                     if(!loaded) {
                         scene.create_node(0.5, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[0]);
-                        scene.create_node(3, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[1]);
+                        scene.create_node(30, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[1]);
 
                         // console.log(m);
                         scene.generate_render_batch(jobsToRender,lightsToRender);
