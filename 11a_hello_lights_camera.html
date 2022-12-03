@@ -279,14 +279,15 @@
 
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
+            let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
             let sky = NormalMesh.uv_sphere( gl, lit_program, 75, 16, skyMat );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
             let platform = NormalMesh.platform(gl,lit_program,250,250,1,15,grassMat);
             let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
             let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
 
-            let testLight = new NodeLight(0, 1, 0, 0);
-            let testLight2 = new NodeLight(1, 1, 1, 0);
+            let testLight = new NodeLight(0, 0.5, 0, 0);
+            let testLight2 = new NodeLight(0.5, 0.5, 0.5, 0);
 
             let numOfSceneObjs = 2;
 
@@ -298,8 +299,8 @@
 
 
             let sphere1 = scene.create_node(5,0.5,15,0,0,0,1,1,1,sphere1Mesh);
-            let sphere2 = scene.create_node(0.5,1,5,0,0,0,1,1,1,sphere2Mesh);
-            scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
+            let sphere2 = scene.create_node(0.5,3,20,0,0,0,1,1,1,sphere2Mesh);
+            let skyNode = scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
             let box1 = scene.create_node(0.5,2,2,0,0,0,1,1,1,box);
             let box2 = scene.create_node(0.5,3,3,0,0,0,1,1,1,box);
             let box3 = scene.create_node(-4,-1,-4,0,0,0,1,1,1,platform);
@@ -311,7 +312,10 @@
             // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
             // scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
             sphere2.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight);
+            let childSphere = sphere2.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
             sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
+
+
 
             scene.set_sun_direction(5, 5, 0);
             scene.set_sun_color(1, 0, 1);
@@ -326,6 +330,11 @@
 
             let camera = new Camera();
 
+            // let cameraNode = box2.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, box);
+            let movingOutY = true;
+            let movingOutX = true;
+            let currentCamera = camera;
+
             function render( now ) {
                 last_update = now;
                 jobsToRender = [];
@@ -338,7 +347,37 @@
                 if((mList.length > numOfSceneObjs-1)) {
 
                     // do movements then generate batch
-                    sphere2.add_pitch(0.001);
+                    // sphere2.add_pitch(0.001);
+                    // sphere2.add_roll(0.001);
+                    // sphere2.add_yaw(0.003);
+
+                    if(childSphere.y >= 15) {
+                        movingOutY = false;
+                    }
+                    if(childSphere.y < 5) {
+                        movingOutY = true;
+                    }
+                    if(childSphere.x >= 15) {
+                        movingOutX = false;
+                    }
+                    if(childSphere.x < 5) {
+                        movingOutX = true;
+                    }
+
+                    if(movingOutY) {
+                        childSphere.move_in_direction(0, 0.01, 0);
+                    }
+                    if(!movingOutY) {
+                        childSphere.move_in_direction(0, -0.1, 0);
+                    }
+                    if(movingOutX) {
+                        childSphere.move_in_direction(0.01, 0, 0);
+                    }
+                    if(!movingOutX) {
+                        childSphere.move_in_direction(-0.01, 0, 0);
+                    }
+
+                    console.log("CHILD Y: " + childSphere.y);
                     // sphere2.add_yaw(0.001);
                     // sphere2.add_roll(0.001);
                     scene.generate_render_batch(jobsToRender,lightsToRender);
@@ -377,8 +416,8 @@
 
                         // transform viewer coordinates
                         let cameraMatrix = scene.get_camera_view();
-                        set_uniform_vec3( gl, current_program, 'viewer_loc', camera.x,
-                            camera.y, camera.z );
+                        set_uniform_vec3( gl, current_program, 'viewer_loc', currentCamera.x,
+                            currentCamera.y, currentCamera.z );
 
                         jobsToRender[i].mesh.render(gl);
                     }
@@ -386,20 +425,24 @@
 
             }
 
+
+
             // TODO: might have to make the "cam" be scene.camera_node
             const KEYMAP = {
-                'KeyW': function() { camera.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
-                'KeyS': function() { camera.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
-                'KeyA': function() { camera.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'KeyD': function() { camera.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
-                'Space': function() { camera.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyC': function() { camera.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
-                'KeyQ': function() { camera.add_roll( -ROTATION_SPEED_PER_FRAME ); },
-                'KeyE': function() { camera.add_roll( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowLeft': function() { camera.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowRight': function() { camera.add_yaw( ROTATION_SPEED_PER_FRAME ); },
-                'ArrowUp': function() { camera.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
-                'ArrowDown': function() { camera.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+                'KeyW': function() { currentCamera.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
+                'KeyS': function() { currentCamera.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
+                'KeyA': function() { currentCamera.move_in_direction( -FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'KeyD': function() { currentCamera.move_in_direction( FLY_SPEED_PER_FRAME, 0, 0 ); },
+                'Space': function() { currentCamera.translate( 0, FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyC': function() { currentCamera.translate( 0, -FLY_SPEED_PER_FRAME, 0 ); },
+                'KeyQ': function() { currentCamera.add_roll( -ROTATION_SPEED_PER_FRAME ); },
+                'KeyE': function() { currentCamera.add_roll( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowLeft': function() { currentCamera.add_yaw( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowRight': function() { currentCamera.add_yaw( ROTATION_SPEED_PER_FRAME ); },
+                'ArrowUp': function() { currentCamera.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
+                'ArrowDown': function() { currentCamera.add_pitch( ROTATION_SPEED_PER_FRAME ); },
+                'KeyR': function() { currentCamera = sphere2;},
+                'KeyF': function() { currentCamera = camera;},
             };
 
             function update() {
