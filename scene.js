@@ -95,14 +95,16 @@ class Node {
         let matrix = new Mat4();
 
         // note: I deliberately changed the order here by applying scale last, so that I could 
-        // do the "breathing" effect. 
-        matrix = matrix.mul( Mat4.scale( this.scale_x, this.scale_y, this.scale_z ) );
+        // do the "breathing" effect.
 
+        //changed to t r s from s t r
         matrix = matrix.mul( Mat4.translation( this.x, this.y, this.z ) );
-        
+
         matrix = matrix.mul( Mat4.rotation_xz( this.yaw ) );
         matrix = matrix.mul( Mat4.rotation_yz( this.pitch ) );
         matrix = matrix.mul( Mat4.rotation_xy( this.roll ) );
+
+        matrix = matrix.mul( Mat4.scale( this.scale_x, this.scale_y, this.scale_z ) );
 
         return matrix;
     }

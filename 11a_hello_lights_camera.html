@@ -279,7 +279,7 @@
 
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
-            let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0.7, 16, scale );
+            let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
             let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
             let sphere3Mesh2 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
             let sphere3Mesh3 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
@@ -287,7 +287,7 @@
 
             let sky = NormalMesh.uv_sphere( gl, lit_program, 75, 16, skyMat );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
-            let platform = NormalMesh.platform(gl,lit_program,250,250,1,15,grassMat);
+            let platform = NormalMesh.platform(gl,lit_program,500,500,1,15,grassMat);
             let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
             let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
 
@@ -311,22 +311,18 @@
             let box2 = scene.create_node(0.5,3,3,0,0,0,1,1,1,box);
             let box3 = scene.create_node(-4,-1,-4,0,0,0,1,1,1,platform);
             // scene.create_node(0, 0, 10,0,0,0,1,1,1,largerTerrain);
-
-            // console.log("MESH M")
-            // console.log(m);
-
             // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
             // scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
 
+            // TODO: This is the invisible sphere inside sphere2 (above).
+            //  All the children below follow the invisible sphere's rotation.
+            //  along with that, the children have their own movements
+            //  (changing x and y movement) down in the render function
             let rotSphere = sphere2.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMesh);
-            // let childSphere = sphere2.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
-            // let childSphere2 = sphere2.create_child_node(0, -4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
-            // let childSphere3 = sphere2.create_child_node(4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
-            // let childSphere4 = sphere2.create_child_node(-4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
-            let childSphere = rotSphere.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
-            let childSphere2 = rotSphere.create_child_node(0, -4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
-            let childSphere3 = rotSphere.create_child_node(4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
-            let childSphere4 = rotSphere.create_child_node(-4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
+            let childSphere = rotSphere.create_child_node(0, 4, 0, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
+            let childSphere2 = rotSphere.create_child_node(0, -4, 0, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
+            let childSphere3 = rotSphere.create_child_node(4, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
+            let childSphere4 = rotSphere.create_child_node(-4, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
             // sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
             childSphere.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight);
             childSphere2.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight2);
@@ -363,57 +359,33 @@
                 if((mList.length > numOfSceneObjs-1)) {
 
                     // do movements then generate batch
-                    // sphere2.add_pitch(0.001);
-                    // sphere2.add_roll(0.001);
-                    // sphere2.add_yaw(0.003);
                     rotSphere.add_roll(0.001);
-
-                    if(childSphere.y >= 10) {
+                    // TODO: This is what makes it move in and out for the sphere
+                    // flags tell it when to change directions
+                    if(childSphere.y >= 6) {
                         movingOutY = false;
                     }
-                    if(childSphere.y < 5) {
+                    if(childSphere.y < 2) {
                         movingOutY = true;
                     }
-                    // if(childSphere.x >= 15) {
-                    //     movingOutX = false;
-                    // }
-                    // if(childSphere.x < 5) {
-                    //     movingOutX = true;
-                    // }
 
                     let MOVE_IN_SPEED = 0.01;
                     let MOVE_OUT_SPEED = 0.01;
 
                     if(movingOutY) {
                         childSphere.move_in_direction(0, MOVE_OUT_SPEED, 0);
-                        childSphere2.move_in_direction(0, - MOVE_OUT_SPEED, 0);
+                        childSphere2.move_in_direction(0, -MOVE_OUT_SPEED, 0);
                         childSphere3.move_in_direction(MOVE_OUT_SPEED, 0, 0);
                         childSphere4.move_in_direction(-MOVE_OUT_SPEED, 0, 0);
                     }
                     if(!movingOutY) {
-                        childSphere.move_in_direction(0, - MOVE_IN_SPEED, 0);
+                        childSphere.move_in_direction(0, -MOVE_IN_SPEED, 0);
                         childSphere2.move_in_direction(0, MOVE_IN_SPEED, 0);
                         childSphere3.move_in_direction(-MOVE_IN_SPEED, 0, 0);
                         childSphere4.move_in_direction(MOVE_IN_SPEED, 0, 0);
                     }
-                    // if(movingOutX) {
-                    //     childSphere.move_in_direction(0.01, 0, 0);
-                    //     // childSphere2.move_in_direction(0.01, 0, 0);
-                    //     // childSphere3.move_in_direction(0.01, 0, 0);
-                    //     // childSphere4.move_in_direction(0.01, 0, 0);
-                    //
-                    // }
-                    // if(!movingOutX) {
-                    //     childSphere.move_in_direction(-0.01, 0, 0);
-                    //     // childSphere2.move_in_direction(-0.01, 0, 0);
-                    //     // childSphere3.move_in_direction(-0.01, 0, 0);
-                    //     // childSphere4.move_in_direction(-0.01, 0, 0);
-                    //
-                    // }
 
-                    console.log("CHILD Y: " + childSphere.y);
-                    // sphere2.add_yaw(0.001);
-                    // sphere2.add_roll(0.001);
+                    // Generate render batch
                     scene.generate_render_batch(jobsToRender,lightsToRender);
 
                     if(!loaded) {
