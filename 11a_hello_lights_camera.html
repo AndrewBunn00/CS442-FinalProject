@@ -59,6 +59,9 @@
                 uniform vec3 light2_loc;
                 uniform vec3 light2_color;
 
+                uniform vec3 light3_loc;
+                uniform vec3 light3_color;
+
                 const float light_attenuation_k = 0.01;
                 const float light_attenuation_l = 0.1;
                 const float light_attenuation_q = 0.00; /* no quadratic term for now */
@@ -145,7 +148,11 @@
                     vec3 vector_to_light2 = light2_loc - coords_tx;
                     vec3 light2_dir = normalize( vector_to_light2 );
                     float light2_atten = attenuation( vector_to_light2 );
-                
+
+                    vec3 vector_to_light3 = light3_loc - coords_tx;
+                    vec3 light3_dir = normalize( vector_to_light3 );
+                    float light3_atten = attenuation( vector_to_light3 );
+
                     vec3 light1_diffuse_color = diff_color( 
                         normal_tx, light1_dir, light1_color, mat_diffuse);
                     vec3 light1_spec_color = spec_color( 
@@ -160,6 +167,13 @@
                     vec4 color_from_light2 = vec4(
                             ( light2_diffuse_color + light2_spec_color ) * light2_atten, 1.0 );
 
+                    vec3 light3_diffuse_color = diff_color(
+                        normal_tx, light3_dir, light3_color, mat_diffuse);
+                    vec3 light3_spec_color = spec_color(
+                        normal_tx, light3_dir, eye_dir, light3_color, mat_specular, mat_shininess );
+                    vec4 color_from_light3 = vec4(
+                            ( light3_diffuse_color + light3_spec_color ) * light3_atten, 1.0 );
+
                     /* multiply color by 0 to remove it. try changing the 0 to a small number like .2
                     and the 1 to the complement of that number (1 - .2 = .8) to see how color blending works.*/
                     v_color = 
@@ -168,7 +182,8 @@
                             ambient_color +
                             color_from_sun +
                             color_from_light1 +
-                            color_from_light2
+                            color_from_light2 +
+                            color_from_light3
                         ) );
                     v_uv = uv;
                 }
@@ -235,6 +250,7 @@
 
             // MOONS
             let moon1 = new LitMaterial(gl, 'tex/moon1.jpg', gl.LINEAR, 0.3, 1, 2, 1);
+            let moon2 = new LitMaterial(gl, 'tex/deathstar.png', gl.LINEAR, 0.3, 1, 2, 1);
 
             // Create the scene here
             let jobsToRender = []
@@ -254,6 +270,7 @@
             let sphere3Mesh6 = NormalMesh.uv_sphere( gl, lit_program, 2, 16, snowyMat );
 
             let moon1Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon1 );
+            let moon2Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon2 );
 
             let sky = NormalMesh.uv_sphere( gl, lit_program, 150, 16, skyMat );
             // let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
@@ -263,6 +280,7 @@
 
             let testLight = new NodeLight(0.8, 0.8, 0.8, 0);
             let testLight2 = new NodeLight(0.04, 0.04, 0.04, 0);
+            let testLight3 = new NodeLight(0.04, 0.04, 0.04, 0);
 
             let numOfSceneObjs = 2;
 
@@ -290,19 +308,22 @@
             let tatooine = rotSphereT.create_child_node(0, 0, -18, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh6);
 
             let rotSphereMoon1 = tatooine.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMoonMesh);
+            let rotSphereMoon2 = mars.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMoonMesh);
 
             let theMoon = rotSphereMoon1.create_child_node(0, 0, -3, 0, 0, 0, 0.5, 0.5, 0.5, moon1Mesh);
+            let theMoon2 = rotSphereMoon2.create_child_node(0, 0, -3, 0, 0, 0, 0.5, 0.5, 0.5, moon2Mesh);
 
             let moonLight = theMoon.create_child_node(0, 0, 0, 0, 0, 0, 0, 0, 0, testLight2);
+            let moonLight2 = theMoon2.create_child_node(0, 0, 0, 0, 0, 0, 0, 0, 0, testLight3);
 
-            let planetList = [rotSphereM, rotSphereV, rotSphereE, rotSphereMa, rotSphereA, rotSphereT];
+            let planetRotators = [rotSphereM, rotSphereV, rotSphereE, rotSphereMa, rotSphereA, rotSphereT];
             let rotSpeeds = [0.0001, 0.0003, 0.0002, 0.0005, 0.00027, 0.0001];
 
-            let moonList = [rotSphereMoon1];
-            let moonRots = [0.001];
+            let moonList = [rotSphereMoon1, rotSphereMoon2];
+            let moonRots = [0.001, 0.0006];
 
-            let planetsToRot = [mercury, venus, earth, mars, alderan, tatooine];
-            let planetSpin = [0.0005, 0.00027, 0.0003, 0.0001, 0.0001, 0.0002];
+            let planetSpin = [mercury, venus, earth, mars, alderan, tatooine];
+            let planetSpinSpeed = [0.0005, 0.00027, 0.0003, 0.0001, 0.0001, 0.0002];
 
             // sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
             sun.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight);
@@ -329,11 +350,18 @@
             let currentCamera = camera;
 
 
+            let skyNode = scene.create_node(camera.x,camera.y,camera.z,0,0,0,1,1,1,sky);
+
 
             function render( now ) {
                 last_update = now;
                 jobsToRender = [];
                 lightsToRender = [];
+
+                // Sky Dome positioning
+                skyNode.x = currentCamera.x;
+                skyNode.y = currentCamera.y;
+                skyNode.z = currentCamera.z;
 
                 requestAnimationFrame( render );
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -347,8 +375,8 @@
 
                     sun.add_yaw(-0.00002);
 
-                    for(let i = 0; i < planetList.length; i++) {
-                        planetList[i].add_yaw(-rotSpeeds[i]);
+                    for(let i = 0; i < planetRotators.length; i++) {
+                        planetRotators[i].add_yaw(-rotSpeeds[i]);
                     }
 
                     for(let i = 0; i < moonList.length; i++) {
@@ -356,8 +384,8 @@
                     }
 
 
-                    for(let i = 0; i < planetsToRot.length; i++) {
-                        planetsToRot[i].add_yaw(-planetSpin[i]);
+                    for(let i = 0; i < planetSpin.length; i++) {
+                        planetSpin[i].add_yaw(-planetSpinSpeed[i]);
                     }
 
                     let MOVE_IN_SPEED = 0.01;
