@@ -3,11 +3,11 @@ class Camera {
 
     constructor() {
         this.x = 0;
-        this.y = 6;
-        this.z = 0;
+        this.y = 33;
+        this.z = -20;
 
         this.yaw = 0;
-        this.pitch = 0;
+        this.pitch = 0.88;
         this.roll = 0;
     }
 
