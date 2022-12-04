@@ -226,13 +226,14 @@
             //     new LitMaterial( gl,
             //     'tex/grass_lawn_seamless.png', gl.LINEAR, 0.2, 0.8, 0.05, 1.0 );
             let scale = new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
-            let skyMat = new LitMaterial(gl, 'tex/seaSky.jpg', gl.LINEAR, 1, 0, 0, 1);
+            let skyMat = new LitMaterial(gl, 'tex/space.png', gl.LINEAR, 1, 0, 0, 1); // TODO: Problem here with texture due to vm
             let grassMat = new LitMaterial(gl, 'tex/grass.jpg', gl.LINEAR, 1, 0, 0, 1);
             let grassReflective = new LitMaterial(gl, 'tex/grass.jpg', gl.LINEAR, 0.25, 1, 2, 1);
             let woodMat = new LitMaterial(gl, 'tex/wood.jpg', gl.LINEAR, 1, 0, 0, 1);
+            let eye = new LitMaterial(gl, 'tex/eye.png', gl.LINEAR, 0.25, 1, 2, 4);
 
-            let sun_dir = ( new Vec4( 1.0, 0.0, 0.0, 0.0 ) ).norm();
-            let sun = new Light( sun_dir.x, sun_dir.y, sun_dir.z, 1.0, 0.95, 0.85, 0 );
+            // let sun_dir = ( new Vec4( 1.0, 0.0, 0.0, 0.0 ) ).norm();
+            // let sun = new Light( sun_dir.x, sun_dir.y, sun_dir.z, 1.0, 0.95, 0.85, 0 );
             let light1 = new Light( -9, -9, 0.0, 1.0, 0.2, 0.2, 1 );
 
             // TODO: Create the scene here
@@ -278,7 +279,7 @@
             ];
 
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
-            let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
+            let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, eye ); // This is changed to an eye now
             let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
             let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
             let sphere3Mesh2 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
@@ -331,7 +332,6 @@
 
             scene.set_sun_direction(5, 5, 0);
             scene.set_sun_color(0.01, 0, 0.01);
-            scene.bind_sun(gl, lit_program);
 
             // make light a child if it will move with the node it's a child of
 
@@ -347,6 +347,8 @@
             let movingOutX = true;
             let currentCamera = camera;
 
+            scene.bind_sun(gl, lit_program);
+
             function render( now ) {
                 last_update = now;
                 jobsToRender = [];
@@ -355,7 +357,7 @@
                 requestAnimationFrame( render );
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-                console.log("Mlist Len: " + mList.length);
+                // console.log("Mlist Len: " + mList.length);
                 if((mList.length > numOfSceneObjs-1)) {
 
                     // do movements then generate batch
@@ -385,8 +387,6 @@
                         childSphere4.move_in_direction(MOVE_IN_SPEED, 0, 0);
                     }
 
-                    // Generate render batch
-                    scene.generate_render_batch(jobsToRender,lightsToRender);
 
                     if(!loaded) {
                         scene.create_node(0.5, -2.75, 30, 2.3, 0, 0, 1, 1, 1, mList[0]);
@@ -398,13 +398,13 @@
                         // console.log(m);
                         loaded = true;
                     }
+                    // Generate render batch
+                    scene.generate_render_batch(jobsToRender,lightsToRender);
 
                     for(let i = 0; i < lightsToRender.length; i++) {
-                        console.log(lightsToRender);
                         let light = new Light(lightsToRender[i].loc.x, lightsToRender[i].loc.y, lightsToRender[i].loc.z,
                             lightsToRender[i].color.r, lightsToRender[i].color.g, lightsToRender[i].color.b, i+1);
                         light.bind(gl, current_program);
-
                     }
 
                     // Iterate through each jobsToRender and render
@@ -424,10 +424,12 @@
                         let cameraMatrix = scene.get_camera_view();
                         set_uniform_vec3( gl, current_program, 'viewer_loc', currentCamera.x,
                             currentCamera.y, currentCamera.z );
-
-                        jobsToRender[i].mesh.render(gl);
+                        if (jobsToRender[i].mesh.material.loaded) {
+                            jobsToRender[i].mesh.render(gl);
+                        }
                     }
                 }
+
 
             }
 

@@ -112,6 +112,8 @@ function set_vertex_attrib_to_buffer(
 
     let err = gl.getError()
     if ( err != 0 ) {
+        console.log("Okay here baby")
+        console.log(attrib_name)
         throw new Error( 'invalid program. Error: ' + err );
     }
 
