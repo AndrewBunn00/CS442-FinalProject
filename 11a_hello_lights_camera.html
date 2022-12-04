@@ -230,7 +230,7 @@
             let kaminoMat = new LitMaterial(gl, 'tex/bluePlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
             let snowyMat = new LitMaterial(gl, 'tex/snowyPlanet.jpg', gl.LINEAR, 0.2, 1, 2, 1);
             let redMat = new LitMaterial(gl, 'tex/purpPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
-            let coolPlanetMat = new LitMaterial(gl, 'tex/darkPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
+            let darkMat = new LitMaterial(gl, 'tex/darkPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
             let desertMat = new LitMaterial(gl, 'tex/swirly.jpg', gl.LINEAR, 0.3, 1, 2, 1);
 
             // MOONS
@@ -248,7 +248,7 @@
 
             let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1.2, 16, redMat );
             let sphere3Mesh2 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, kaminoMat );
-            let sphere3Mesh3 = NormalMesh.uv_sphere( gl, lit_program, 1.1, 16, coolPlanetMat );
+            let sphere3Mesh3 = NormalMesh.uv_sphere( gl, lit_program, 1.1, 16, darkMat );
             let sphere3Mesh4 = NormalMesh.uv_sphere( gl, lit_program, 1.7, 16, earthMat );
             let sphere3Mesh5 = NormalMesh.uv_sphere( gl, lit_program, 0.9, 16, desertMat );
             let sphere3Mesh6 = NormalMesh.uv_sphere( gl, lit_program, 2, 16, snowyMat );
@@ -284,9 +284,9 @@
 
             let mercury = rotSphereM.create_child_node(0, 0, -5.8, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
             let venus = rotSphereV.create_child_node(0, 0, -7, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
-            let earth = rotSphereE.create_child_node(0, 0, -10, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
+            let earth = rotSphereE.create_child_node(0, 0, -10.4, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
             let mars = rotSphereMa.create_child_node(0, 0, -8.7, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
-            let alderan = rotSphereA.create_child_node(0, 0, -12, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh5);
+            let alderan = rotSphereA.create_child_node(0, 0, -12.9, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh5);
             let tatooine = rotSphereT.create_child_node(0, 0, -18, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh6);
 
             let rotSphereMoon1 = tatooine.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMoonMesh);
