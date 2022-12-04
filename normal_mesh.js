@@ -318,6 +318,75 @@ class NormalMesh {
     }
 
 
+    static uv_cylinder( gl, program, radius, subdivisions, material ,flip) {
+        let verts = [];
+        let indis = [];
+        let TAU = 2 * Math.PI;
+
+        let angle = Math.PI / 2;
+        let adj = -(Math.PI/subdivisions)
+
+        for ( let layer = 0; layer <= subdivisions; layer++ ) {
+
+            let y_turns = layer / subdivisions / 2;
+            let y = Math.cos(y_turns * TAU);
+            y *= radius;
+
+            for ( let subdiv = 0; subdiv <= subdivisions; subdiv++ ) {
+
+                let turns = subdiv/subdivisions;
+                let radians = turns * TAU;
+
+                let x = Math.cos(radians) * radius;
+                let z = Math.sin(radians) * radius;
+
+                let u = subdiv / subdivisions;
+                let v = layer / subdivisions;
+
+                // coords, colors, and uv
+                verts.push(x,y,z);
+                verts.push(0, 0, 0, 1);
+                verts.push(u, v);
+
+                // if we want normals flipped or not
+                if (flip) {
+                    verts.push(-x,-y,-z);
+                } else {
+                    verts.push(x,y,z);
+                }
+
+            }
+
+            angle += adj;
+        }
+
+        // console.log(verts);
+        for ( let layer = 0; layer < subdivisions; layer++ ) {
+            let index = layer * (subdivisions + 1);
+            let index_2 = index + subdivisions + 1;
+            for ( let subdiv = 0; subdiv < subdivisions; subdiv++ ) {
+                //adding one indice starting from the upper layer
+                indis.push(index);
+                //adding 2nd indice from the lower layer
+                indis.push(index_2);
+                //adding third indice starting from the upper layer and over 1 position
+                indis.push(index + 1);
+
+                //starting from the upper layer indice + 1
+                indis.push(index + 1);
+                //lower layer indice directly below index
+                indis.push(index_2);
+                //adding third indice of 2nd triangle from the lower layer + 1
+                indis.push(index_2 + 1);
+
+                index_2++;
+                index++;
+
+            }
+        }
+        // console.log(indices)
+        return new NormalMesh( gl, program, verts, indis, material, false );
+    }
 
 
     /**

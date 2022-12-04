@@ -234,19 +234,21 @@
             let cam = new Camera();
             cam.translate( 0, 0, -4.5 );
 
+            // MATERIALS
             let scale = new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
             let skyMat = new LitMaterial(gl, 'tex/milkyway.jpg', gl.LINEAR, 1, 0, 0, 1); // TODO: Problem here with texture due to vm
+            let orangeMat = new LitMaterial(gl, 'tex/orange.jpg', gl.LINEAR, 1, 1, 2, 1);
 
             // SUN
             let sunMat = new LitMaterial(gl, 'tex/sun.jpg', gl.LINEAR, 1, 1, 2, 4);
 
             // PLANETS
-            let earthMat = new LitMaterial(gl, 'tex/misty.jpg', gl.LINEAR, 0.3, 1, 2, 1);
+            let daegobaMat = new LitMaterial(gl, 'tex/misty.jpg', gl.LINEAR, 0.3, 1, 2, 1);
             let kaminoMat = new LitMaterial(gl, 'tex/bluePlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
             let snowyMat = new LitMaterial(gl, 'tex/snowyPlanet.jpg', gl.LINEAR, 0.2, 1, 2, 1);
-            let redMat = new LitMaterial(gl, 'tex/purpPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
+            let purpleMat = new LitMaterial(gl, 'tex/purpPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
             let darkMat = new LitMaterial(gl, 'tex/darkPlanet.jpg', gl.LINEAR, 0.3, 1, 2, 1);
-            let desertMat = new LitMaterial(gl, 'tex/swirly.jpg', gl.LINEAR, 0.3, 1, 2, 1);
+            let swirlyMat = new LitMaterial(gl, 'tex/swirly.jpg', gl.LINEAR, 0.3, 1, 2, 1);
 
             // MOONS
             let moon1 = new LitMaterial(gl, 'tex/moon1.jpg', gl.LINEAR, 0.3, 1, 2, 1);
@@ -257,22 +259,26 @@
             let lightsToRender = []
             let scene = new Scene();
 
+            // MESHES
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 4, 16, sunMat ); // This is changed to an eye now
             let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
             let rotSphereMoonMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
 
-            let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1.2, 16, redMat );
+            let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1.2, 16, purpleMat );
             let sphere3Mesh2 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, kaminoMat );
             let sphere3Mesh3 = NormalMesh.uv_sphere( gl, lit_program, 1.1, 16, darkMat );
-            let sphere3Mesh4 = NormalMesh.uv_sphere( gl, lit_program, 1.7, 16, earthMat );
-            let sphere3Mesh5 = NormalMesh.uv_sphere( gl, lit_program, 0.9, 16, desertMat );
+            let sphere3Mesh4 = NormalMesh.uv_sphere( gl, lit_program, 1.7, 16, daegobaMat );
+            let sphere3Mesh5 = NormalMesh.uv_sphere( gl, lit_program, 0.9, 16, swirlyMat );
             let sphere3Mesh6 = NormalMesh.uv_sphere( gl, lit_program, 2, 16, snowyMat );
 
             let moon1Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon1 );
             let moon2Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon2 );
 
             let sky = NormalMesh.uv_sphere( gl, lit_program, 150, 16, skyMat );
+
+            let orangeCylinder = NormalMesh.uv_cylinder(gl, lit_program, 1, 16, orangeMat, false);
+
             // let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
             // let platform = NormalMesh.platform(gl,lit_program,500,500,1,15,grassMat);
             // let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
@@ -302,9 +308,9 @@
 
             let mercury = rotSphereM.create_child_node(0, 0, -5.8, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
             let venus = rotSphereV.create_child_node(0, 0, -7, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
-            let earth = rotSphereE.create_child_node(0, 0, -10.4, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
+            let earth = rotSphereE.create_child_node(0, 0, -12.1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
             let mars = rotSphereMa.create_child_node(0, 0, -8.7, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
-            let alderan = rotSphereA.create_child_node(0, 0, -12.9, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh5);
+            let alderan = rotSphereA.create_child_node(0, 0, -14, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh5);
             let tatooine = rotSphereT.create_child_node(0, 0, -18, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh6);
 
             let rotSphereMoon1 = tatooine.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMoonMesh);
@@ -441,8 +447,8 @@
                 'ArrowRight': function() { currentCamera.add_yaw( ROTATION_SPEED_PER_FRAME ); },
                 'ArrowUp': function() { currentCamera.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
                 'ArrowDown': function() { currentCamera.add_pitch( ROTATION_SPEED_PER_FRAME ); },
-                'KeyR': function() { currentCamera = sun;},
-                'KeyF': function() { currentCamera = camera;},
+                // 'KeyR': function() { currentCamera = sun;},
+                // 'KeyF': function() { currentCamera = camera;},
             };
 
             function update() {
