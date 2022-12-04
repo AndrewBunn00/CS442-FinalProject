@@ -279,7 +279,12 @@
 
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
             let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
+            let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0.7, 16, scale );
             let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
+            let sphere3Mesh2 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
+            let sphere3Mesh3 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
+            let sphere3Mesh4 = NormalMesh.uv_sphere( gl, lit_program, 1, 16, grassReflective );
+
             let sky = NormalMesh.uv_sphere( gl, lit_program, 75, 16, skyMat );
             let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
             let platform = NormalMesh.platform(gl,lit_program,250,250,1,15,grassMat);
@@ -287,7 +292,7 @@
             let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
 
             let testLight = new NodeLight(0, 0.5, 0, 0);
-            let testLight2 = new NodeLight(0.5, 0.5, 0.5, 0);
+            let testLight2 = new NodeLight(0.5, 0, 0, 0);
 
             let numOfSceneObjs = 2;
 
@@ -300,6 +305,7 @@
 
             let sphere1 = scene.create_node(5,0.5,15,0,0,0,1,1,1,sphere1Mesh);
             let sphere2 = scene.create_node(0.5,3,20,0,0,0,1,1,1,sphere2Mesh);
+            // let rotSphere = scene.create_node(sphere2.x, sphere2.y, sphere2.z, 0, 0, 0, 1, 1, 1, rotSphereMesh);
             let skyNode = scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
             let box1 = scene.create_node(0.5,2,2,0,0,0,1,1,1,box);
             let box2 = scene.create_node(0.5,3,3,0,0,0,1,1,1,box);
@@ -311,14 +317,24 @@
 
             // scene.create_node(0.5, 1, 10, 0, 0, 0, 1, 1, 1, m);
             // scene.create_node(5, 2, 5, 0, 0, 0, 1, 1, 1, testLight);
-            sphere2.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight);
-            let childSphere = sphere2.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
-            sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
+
+            let rotSphere = sphere2.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, rotSphereMesh);
+            // let childSphere = sphere2.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
+            // let childSphere2 = sphere2.create_child_node(0, -4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
+            // let childSphere3 = sphere2.create_child_node(4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
+            // let childSphere4 = sphere2.create_child_node(-4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
+            let childSphere = rotSphere.create_child_node(0, 4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh);
+            let childSphere2 = rotSphere.create_child_node(0, -4, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh2);
+            let childSphere3 = rotSphere.create_child_node(4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh3);
+            let childSphere4 = rotSphere.create_child_node(-4, 0, 1, 0, 0, 0, 0.5, 0.5, 0.5, sphere3Mesh4);
+            // sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
+            childSphere.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight);
+            childSphere2.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight2);
 
 
 
             scene.set_sun_direction(5, 5, 0);
-            scene.set_sun_color(1, 0, 1);
+            scene.set_sun_color(0.01, 0, 0.01);
             scene.bind_sun(gl, lit_program);
 
             // make light a child if it will move with the node it's a child of
@@ -350,32 +366,50 @@
                     // sphere2.add_pitch(0.001);
                     // sphere2.add_roll(0.001);
                     // sphere2.add_yaw(0.003);
+                    rotSphere.add_roll(0.001);
 
-                    if(childSphere.y >= 15) {
+                    if(childSphere.y >= 10) {
                         movingOutY = false;
                     }
                     if(childSphere.y < 5) {
                         movingOutY = true;
                     }
-                    if(childSphere.x >= 15) {
-                        movingOutX = false;
-                    }
-                    if(childSphere.x < 5) {
-                        movingOutX = true;
-                    }
+                    // if(childSphere.x >= 15) {
+                    //     movingOutX = false;
+                    // }
+                    // if(childSphere.x < 5) {
+                    //     movingOutX = true;
+                    // }
+
+                    let MOVE_IN_SPEED = 0.01;
+                    let MOVE_OUT_SPEED = 0.01;
 
                     if(movingOutY) {
-                        childSphere.move_in_direction(0, 0.01, 0);
+                        childSphere.move_in_direction(0, MOVE_OUT_SPEED, 0);
+                        childSphere2.move_in_direction(0, - MOVE_OUT_SPEED, 0);
+                        childSphere3.move_in_direction(MOVE_OUT_SPEED, 0, 0);
+                        childSphere4.move_in_direction(-MOVE_OUT_SPEED, 0, 0);
                     }
                     if(!movingOutY) {
-                        childSphere.move_in_direction(0, -0.1, 0);
+                        childSphere.move_in_direction(0, - MOVE_IN_SPEED, 0);
+                        childSphere2.move_in_direction(0, MOVE_IN_SPEED, 0);
+                        childSphere3.move_in_direction(-MOVE_IN_SPEED, 0, 0);
+                        childSphere4.move_in_direction(MOVE_IN_SPEED, 0, 0);
                     }
-                    if(movingOutX) {
-                        childSphere.move_in_direction(0.01, 0, 0);
-                    }
-                    if(!movingOutX) {
-                        childSphere.move_in_direction(-0.01, 0, 0);
-                    }
+                    // if(movingOutX) {
+                    //     childSphere.move_in_direction(0.01, 0, 0);
+                    //     // childSphere2.move_in_direction(0.01, 0, 0);
+                    //     // childSphere3.move_in_direction(0.01, 0, 0);
+                    //     // childSphere4.move_in_direction(0.01, 0, 0);
+                    //
+                    // }
+                    // if(!movingOutX) {
+                    //     childSphere.move_in_direction(-0.01, 0, 0);
+                    //     // childSphere2.move_in_direction(-0.01, 0, 0);
+                    //     // childSphere3.move_in_direction(-0.01, 0, 0);
+                    //     // childSphere4.move_in_direction(-0.01, 0, 0);
+                    //
+                    // }
 
                     console.log("CHILD Y: " + childSphere.y);
                     // sphere2.add_yaw(0.001);
