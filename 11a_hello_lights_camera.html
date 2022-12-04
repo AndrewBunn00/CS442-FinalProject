@@ -261,8 +261,8 @@
 
             // MESHES
             let sphere1Mesh = NormalMesh.uv_sphere( gl, lit_program, 1, 16, scale );
-            let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 4, 16, sunMat ); // This is changed to an eye now
-            let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
+            let sphere2Mesh = NormalMesh.uv_sphere( gl, lit_program, 4, 16, sunMat );
+            let rotSphereMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale ); // This is invisible
             let rotSphereMoonMesh = NormalMesh.uv_sphere( gl, lit_program, 0, 16, scale );
 
             let sphere3Mesh = NormalMesh.uv_sphere( gl, lit_program, 1.2, 16, purpleMat );
@@ -290,12 +290,12 @@
 
             let numOfSceneObjs = 2;
 
-            let sphere1 = scene.create_node(5,0.5,15,0,0,0,1,1,1,sphere1Mesh);
-            let sphere2 = scene.create_node(0.5,3,20,0,0,0,1,1,1,sphere2Mesh);
-            // let rotSphere = scene.create_node(sphere2.x, sphere2.y, sphere2.z, 0, 0, 0, 1, 1, 1, rotSphereMesh);
-            let skyNode = scene.create_node(0.5,-0.5,15,0,0,0,1,1,1,sky);
+            // TODO: This is the visible center sphere
+            let sun = scene.create_node(0.5,3,20,0,0,0,1,1,1,sphere2Mesh);
 
-            // TODO: This is the invisible sphere inside sun (above).
+            let testCylinder = scene.create_node(0, 20, 10, 0, 0, 0, 0.1, 1, 0.1, orangeCylinder);
+
+            // TODO: This is the invisible sphere inside sun
             //  All the children below follow the invisible sphere's rotation.
             //  along with that, the children have their own movements
             //  (changing x and y movement) down in the render function
@@ -422,6 +422,7 @@
                         let cameraMatrix = scene.get_camera_view();
                         set_uniform_vec3( gl, current_program, 'viewer_loc', currentCamera.x,
                             currentCamera.y, currentCamera.z );
+                        // TODO: HERE
                         if (jobsToRender[i].mesh.material.loaded) {
                             jobsToRender[i].mesh.render(gl);
                         }
