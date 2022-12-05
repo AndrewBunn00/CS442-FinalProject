@@ -30,7 +30,6 @@
         <script src = "controls.js"></script>
         <script src = "cam.js"></script>
         <script src = "lit_material.js"></script>
-        <!-- <script src = "programs.js"></script> -->
         <script src = "light.js"></script>
         <script src = "scene.js"></script>
 
@@ -235,9 +234,8 @@
             cam.translate( 0, 0, -4.5 );
 
             // MATERIALS
-            let scale = new LitMaterial( gl, 'tex/metal_scale.png', gl.LINEAR, 0.25, 1, 2, 4 );
-            let skyMat = new LitMaterial(gl, 'tex/milkyway.jpg', gl.LINEAR, 1, 0, 0, 1); // TODO: Problem here with texture due to vm
-            let orangeMat = new LitMaterial(gl, 'tex/orange.jpg', gl.LINEAR, 1, 1, 2, 1);
+            let scale = new LitMaterial( gl, 'tex/misty.jpg', gl.LINEAR, 0.25, 1, 2, 4 );
+            let skyMat = new LitMaterial(gl, 'tex/milkyway.jpg', gl.LINEAR, 1, 0, 0, 1);
 
             // SUN
             let sunMat = new LitMaterial(gl, 'tex/sun.jpg', gl.LINEAR, 1, 1, 2, 4);
@@ -275,27 +273,16 @@
             let moon1Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon1 );
             let moon2Mesh = NormalMesh.uv_sphere( gl, lit_program, 0.8, 16, moon2 );
 
-            let sky = NormalMesh.uv_sphere( gl, lit_program, 150, 16, skyMat );
-
-            let orangeCylinder = NormalMesh.uv_cylinder(gl, lit_program, 1, 16, orangeMat, false);
-
-            // let box = NormalMesh.box( gl, lit_program, 1, 1, 1, scale );
-            // let platform = NormalMesh.platform(gl,lit_program,500,500,1,15,grassMat);
-            // let terrain = NormalMesh.from_heightmap(gl, lit_program, map, 0, 1, scale);
-            // let largerTerrain = NormalMesh.from_heightmap(gl, lit_program, biggestMap, 0, 2, woodMat);
+            let sky = NormalMesh.uv_sphere( gl, lit_program, 250, 16, skyMat );
 
             let testLight = new NodeLight(0.8, 0.8, 0.8, 0);
             let testLight2 = new NodeLight(0.04, 0.04, 0.04, 0);
             let testLight3 = new NodeLight(0.04, 0.04, 0.04, 0);
 
-            let numOfSceneObjs = 2;
 
-            // TODO: This is the visible center sphere
+            // This is the visible center sphere
             let sun = scene.create_node(0.5,3,20,0,0,0,1,1,1,sphere2Mesh);
 
-            let testCylinder = scene.create_node(0, 20, 10, 0, 0, 0, 0.1, 1, 0.1, orangeCylinder);
-
-            // TODO: This is the invisible sphere inside sun
             //  All the children below follow the invisible sphere's rotation.
             //  along with that, the children have their own movements
             //  (changing x and y movement) down in the render function
@@ -331,11 +318,7 @@
             let planetSpin = [mercury, venus, earth, mars, alderan, tatooine];
             let planetSpinSpeed = [0.0005, 0.00027, 0.0003, 0.0001, 0.0001, 0.0002];
 
-            // sphere1.create_child_node(0, 3, 0, 0, 0, 0, 1, 1, 1, testLight2);
             sun.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight);
-            // sun.create_child_node(0, 0, 0, 0, 0, 0, 1, 1, 1, testLight2);
-
-
 
             scene.set_sun_direction(0, 0, 0);
             scene.set_sun_color(1, 1, 1);
@@ -372,12 +355,9 @@
                 requestAnimationFrame( render );
                 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-                // console.log("Mlist Len: " + mList.length);
-                // if((mList.length > numOfSceneObjs-1))
                 if(true) {
 
                     // do movements then generate batch
-                    // rotSphere.add_roll(0.001);
 
                     sun.add_yaw(-0.00002);
 
@@ -393,9 +373,6 @@
                     for(let i = 0; i < planetSpin.length; i++) {
                         planetSpin[i].add_yaw(-planetSpinSpeed[i]);
                     }
-
-                    let MOVE_IN_SPEED = 0.01;
-                    let MOVE_OUT_SPEED = 0.01;
 
                     scene.generate_render_batch(jobsToRender,lightsToRender);
 
@@ -419,22 +396,17 @@
                         set_uniform_matrix4( gl, current_program, 'view', view.data );
 
                         // transform viewer coordinates
-                        let cameraMatrix = scene.get_camera_view();
                         set_uniform_vec3( gl, current_program, 'viewer_loc', currentCamera.x,
                             currentCamera.y, currentCamera.z );
-                        // TODO: HERE
+
                         if (jobsToRender[i].mesh.material.loaded) {
                             jobsToRender[i].mesh.render(gl);
                         }
                     }
                 }
-
-
             }
 
 
-
-            // TODO: might have to make the "cam" be scene.camera_node
             const KEYMAP = {
                 'KeyW': function() { currentCamera.move_in_direction( 0, 0, FLY_SPEED_PER_FRAME ); },
                 'KeyS': function() { currentCamera.move_in_direction( 0, 0, -FLY_SPEED_PER_FRAME ); },
@@ -448,8 +420,6 @@
                 'ArrowRight': function() { currentCamera.add_yaw( ROTATION_SPEED_PER_FRAME ); },
                 'ArrowUp': function() { currentCamera.add_pitch( -ROTATION_SPEED_PER_FRAME ); },
                 'ArrowDown': function() { currentCamera.add_pitch( ROTATION_SPEED_PER_FRAME ); },
-                // 'KeyR': function() { currentCamera = sun;},
-                // 'KeyF': function() { currentCamera = camera;},
             };
 
             function update() {
